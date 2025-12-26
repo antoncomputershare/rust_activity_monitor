@@ -20,6 +20,10 @@ use std::{
     io::{self, Stdout},
     time::{Duration, Instant},
 };
+
+#[cfg(target_os = "windows")]
+use std::process::Command;
+
 use sysinfo::{Disks, Networks, Pid, System};
 
 // Constants
@@ -322,7 +326,11 @@ impl AppState {
             .collect();
         
         // Sort by CPU usage descending
-        processes.sort_by(|a, b| b.cpu_usage.partial_cmp(&a.cpu_usage).unwrap());
+        processes.sort_by(|a, b| {
+            b.cpu_usage
+                .partial_cmp(&a.cpu_usage)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
         
         // Keep top 25
         processes.truncate(25);
